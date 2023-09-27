@@ -20,6 +20,9 @@ assign validForFoot             = false
 # Locus nav interface flags
 assign is_wet                   = false           # %is_wet% | Choose a safer route in wet conditions | boolean
 
+assign desired_mtb_scale        = 2           # %desired_mtb_scale% | Preferred MTB scale (0,...,6) | number
+assign desired_mtb_scale_weight = 1           # %desired_mtb_scale_weight% | Weight to enforce preferred MTB scale | number
+
 assign mtb_hard_factor          = 2               # %mtb_hard_factor% | Difficulty of the route (0:xc/am...2:allmountain...4:enduro) | number
 assign use_uncertain_gates      = false           # %use_uncertain_gates% | Route through gates with no access info (might be locked) | boolean
 
@@ -222,17 +225,27 @@ assign hw_minor_penalty =
 #
 # additional penalties for other road attributes
 #
+#assign mtb_sac_penalty =
+#  max 0 
+#  multiply 
+# ( sub 1 ( multiply mtb_hard_factor 0.25 ) )
+#  ( 
+#    if ( or mtb:scale=3|2+ sac_scale=demanding_mountain_hiking ) then 2
+#    else if ( or mtb:scale=4 sac_scale=alpine_hiking )           then 4
+#    else if ( or mtb:scale=5 sac_scale=demanding_alpine_hiking ) then 50
+#    else if ( or mtb:scale=6 sac_scale=difficult_alpine_hiking ) then 100
+#                                                                 else 0
+#  )
+
 assign mtb_sac_penalty =
   max 0 
   multiply 
-  ( sub 1 ( multiply mtb_hard_factor 0.25 ) )
+  ( sub mtb:scale desired_mtb_scale )
   ( 
-    if ( or mtb:scale=3|2+ sac_scale=demanding_mountain_hiking ) then 2
-    else if ( or mtb:scale=4 sac_scale=alpine_hiking )           then 4
-    else if ( or mtb:scale=5 sac_scale=demanding_alpine_hiking ) then 50
-    else if ( or mtb:scale=6 sac_scale=difficult_alpine_hiking ) then 100
-                                                                 else 0
+    desired_mtb_scale_weight
   )
+
+
 
 assign mtb_uh_penalty =                                         #(supported since 1.4.4)
   max 0 
